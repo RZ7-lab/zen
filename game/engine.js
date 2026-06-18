@@ -19,8 +19,8 @@ class ClipPlayer {
     this.standby = this.b;
     this.active.style.opacity = '1';
     this.cache = {};        // clipId -> blobURL
-    this.onTime = null;     // (currentTime, duration) => void，每帧
-    this._raf = null;
+    this.onTime = null;     // (currentTime, duration) => void，每 tick
+    this._ticker = null;
 
     this.flashEl = document.createElement('div');
     this.flashEl.className = 'vfx-flash';
@@ -63,7 +63,7 @@ class ClipPlayer {
    *   - 循环：立即 resolve（调用方自行决定何时切走）
    */
   play(id, opts = {}) {
-    const { loop = false, transition = 'fade', flash = false } = opts;
+    const { loop = false, transition = 'fade', flash = false, fadeMs = 160 } = opts;
     const url = this.cache[id];
     return new Promise((resolve) => {
       if (!url) { console.warn('缺少片段:', id); resolve(); return; }
@@ -80,15 +80,20 @@ class ClipPlayer {
         if (p && p.catch) p.catch(() => {});
         if (flash) this.flash();
 
-        next.style.transition = (transition === 'cut') ? 'none' : 'opacity .16s ease-out';
-        next.style.opacity = '1';
-        this.active.style.opacity = '0';
-
-        // 互换角色，并把上一段淡出 + 暂停（否则循环待机片段的音轨会叠在底下继续播）
+        const cut = (transition === 'cut');
+        const dur = cut ? 0 : fadeMs;
+        const trans = cut ? 'none' : `opacity ${dur}ms ease-out`;
         const prev = this.active;
+        // 真·交叉淡入：新片段淡入的同时旧片段同步淡出
+        next.style.transition = trans;
+        next.style.opacity = '1';
+        prev.style.transition = trans;
+        prev.style.opacity = '0';
+
+        // 互换角色，并把上一段淡出音量 + 暂停（否则循环待机片段的音轨会叠在底下继续播）
         this.active = next;
         this.standby = prev;
-        this._retire(prev);
+        this._retire(prev, dur);
         this._ensureRaf();
 
         if (loop) {
@@ -105,18 +110,20 @@ class ClipPlayer {
   }
 
   _ensureRaf() {
-    if (this._raf) return;
-    const tick = () => {
-      if (this.onTime && this.active) this.onTime(this.active.currentTime, this.active.duration || 0);
-      this._raf = requestAnimationFrame(tick);
-    };
-    this._raf = requestAnimationFrame(tick);
+    if (this._ticker) return;
+    // 用 setInterval 而非 requestAnimationFrame 驱动时间回调：rAF 在标签页不可见/不绘制时会被冻结
+    // （弹反窗口判定不能因为切后台或无头环境而失效）；30Hz 足够驱动弹反环与计时。
+    this._ticker = setInterval(() => {
+      // onTime 抛异常绝不能拖垮整个计时循环
+      try { if (this.onTime && this.active) this.onTime(this.active.currentTime, this.active.duration || 0); }
+      catch (e) { /* 吞掉，保证循环存活 */ }
+    }, 33);
   }
 
-  /* 让上一段在 ~180ms 内淡出音量并暂停，避免与新片段音轨重叠 */
-  _retire(v) {
+  /* 让上一段淡出音量并暂停，避免与新片段音轨重叠（淡出时长跟随画面过渡） */
+  _retire(v, fadeMs = 160) {
     if (!v || v.paused || !v.src) return;
-    const v0 = v.volume, steps = 9, dt = 20;
+    const v0 = v.volume, steps = 9, dt = Math.max(14, Math.round(Math.max(fadeMs, 120) / steps));
     let i = 0;
     const id = setInterval(() => {
       i++;

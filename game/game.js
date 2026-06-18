@@ -22,6 +22,18 @@
 
   let M, player, boss, phaseIdx, qi, state = 'boot';
 
+  // 按 manifest 的 enter 配置播放片段（过渡集中在数据层，便于逐状态调优）
+  function playClip(id, extra = {}) {
+    const c = (M.clips && M.clips[id]) || {};
+    const e = c.enter || {};
+    return cp.play(id, Object.assign({
+      loop: !!c.loop,
+      transition: e.type || 'fade',
+      flash: !!e.flash,
+      fadeMs: (e.fadeMs != null ? e.fadeMs : 160)
+    }, extra));
+  }
+
   /* ---------- 启动 ---------- */
   async function boot() {
     M = await (await fetch('manifest.json')).json();
@@ -55,12 +67,12 @@
     state = 'busy';
     status('鬼市 · 折命娘现身');
     sfx._ensure();
-    await cp.play('intro');
+    await playClip('intro');
     await toIdle();
     playerTurn();
   }
 
-  async function toIdle() { await cp.play('idle', { loop: true }); }
+  async function toIdle() { await playClip('idle'); }
 
   function playerTurn() {
     state = 'player';
@@ -80,7 +92,7 @@
 
     if (skill.type === 'attack') {
       skill.id === 'ultimate' ? sfx.ultimate() : sfx.swing();
-      await cp.play(skill.clip, { flash: skill.id === 'ultimate' });
+      await playClip(skill.clip);
       const dmg = rng(skill.dmg);
       const crit = Math.random() < 0.18;
       const real = crit ? Math.round(dmg * 1.5) : dmg;
@@ -94,6 +106,7 @@
       if (boss.posture >= boss.postureMax) return doBreak();
     } else { // meditate
       sfx.heal();
+      await playClip('meditate');
       player.hp = clamp(player.hp + skill.heal, 0, player.hpMax);
       qi = clamp(qi + skill.qiGain, 0, M.player.qiMax);
       floatNum(skill.heal, 'heal');
@@ -116,7 +129,7 @@
       boss.posture = clamp(boss.posture + M.bossAttack.postureOnParry, 0, boss.postureMax);
       qi = clamp(qi + 1, 0, M.player.qiMax);
       banner('弹 反 !', 'parry');
-      await cp.play('parry_success', { transition: 'cut', flash: true });
+      await playClip('parry_success');
       renderBoss(); renderQi();
       if (boss.posture >= boss.postureMax) return doBreak();
     } else {
@@ -126,7 +139,7 @@
       floatNum(dmg, 'player');
       banner('受 击', 'hurt');
       shake();
-      await cp.play('player_hit', { transition: 'cut', flash: true });
+      await playClip('player_hit');
       renderPlayer();
       if (player.hp <= 0) return defeat();
     }
@@ -178,7 +191,7 @@
       stage.addEventListener('pointerdown', onTap);
       $('parry-btn').addEventListener('click', onTap);
 
-      cp.play('boss_windup').then(() => settle(false)); // 片段自然结束 = 没弹到
+      playClip('boss_windup').then(() => settle(false)); // 片段自然结束 = 没弹到
     });
   }
 
@@ -188,7 +201,7 @@
     sfx.break_();
     banner('破 防   B R E A K', 'break');
     shake();
-    await cp.play('break_execute', { flash: true });
+    await playClip('break_execute');
     boss.posture = 0;
     const dmg = 480 + rng([0, 260]);
     boss.hp = clamp(boss.hp - dmg, 0, boss.hpMax);
@@ -206,7 +219,7 @@
       state = 'busy';
       phaseIdx++;
       banner('折 命 娘 · 二 相', 'phase');
-      await cp.play('boss_phase2', { flash: true });
+      await playClip('boss_phase2');
       const ph = M.boss.phases[phaseIdx];
       boss = { hp: ph.hp, hpMax: ph.hp, posture: 0, postureMax: ph.postureMax };
       $('boss-name').textContent = M.boss.name + ' 〔二相〕';
@@ -221,7 +234,7 @@
 
   async function victory() {
     state = 'end'; sfx.victory();
-    await cp.play('victory');
+    await playClip('victory');
     showResult('胜', '尘埃落定。你又近了「我」一步。');
   }
   async function defeat() {

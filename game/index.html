@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>佛舍 · 鬼市 — BOSS 战垂直切片</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="game">
+
+  <!-- 视频层（两个 video 由 engine.js 注入此处） -->
+  <div id="stage"></div>
+
+  <!-- ===== HUD / 交互层 ===== -->
+  <div id="hud">
+
+    <!-- 顶部：BOSS 血条 + 破防架势条 -->
+    <div id="boss-bar">
+      <div id="boss-name">折命娘 · 怨灵蛛生</div>
+      <div class="bar boss-hp"><div id="boss-hp-fill"></div></div>
+      <div id="boss-hp-text" class="hp-num"></div>
+      <div id="boss-posture" class="bar posture"><div id="boss-posture-fill"></div>
+        <span class="posture-label">破防</span>
+      </div>
+    </div>
+
+    <div id="status-line"></div>
+
+    <!-- 中央：伤害数字 / 横幅 / 弹反环 -->
+    <div id="fx-layer"></div>
+    <div id="parry-ring">
+      <div id="parry-ring-shrink"></div>
+      <div class="parry-core">弹反</div>
+      <div class="parry-key">空格 / 点击</div>
+    </div>
+
+    <!-- 底部：玩家状态 + 技能轮盘 -->
+    <div id="player-bar">
+      <div class="player-vitals">
+        <div class="portrait">佛<br>舍</div>
+        <div class="vitals-col">
+          <div class="bar player-hp"><div id="player-hp-fill"></div></div>
+          <div id="player-hp-text" class="hp-num"></div>
+          <div id="qi-pips" class="qi">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+      </div>
+      <div id="skill-bar"></div>
+      <button id="parry-btn" class="hidden">弹<br>反</button>
+    </div>
+  </div>
+
+  <!-- ===== 加载 ===== -->
+  <div id="loading">
+    <div class="load-title">佛 舍 · 鬼 市</div>
+    <div class="load-bar"><div id="load-bar-fill"></div></div>
+    <div id="load-pct">0%</div>
+    <div class="load-sub">正在请来怨灵……</div>
+  </div>
+
+  <!-- ===== 标题 ===== -->
+  <div id="title" class="hidden">
+    <div class="title-main">佛 舍 · 鬼 市</div>
+    <div class="title-poem">
+      那日佛咬折了指头，阖目而去。<br>
+      人间没了渡口，苦无去处，结成灵，游于市。
+    </div>
+    <div class="title-vs">BOSS &nbsp;—&nbsp; <span id="title-boss"></span></div>
+    <button id="start-btn">入　局</button>
+    <div class="title-tip">
+      回合制 · 选招出击 &nbsp;|&nbsp; BOSS 出招时 <b>空格 / 点击屏幕</b> 弹反<br>
+      架势条满 → 破防处决 &nbsp;|&nbsp; 对标《33号远征队》
+    </div>
+  </div>
+
+  <!-- ===== 结算 ===== -->
+  <div id="result" class="hidden">
+    <div id="result-big"></div>
+    <div id="result-sub"></div>
+    <button id="retry-btn">再 战</button>
+  </div>
+
+</div>
+
+<script src="sfx.js"></script>
+<script src="engine.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

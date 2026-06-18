@@ -1,0 +1,13 @@
+# 原始概念素材：641MB，超过 GitHub 单文件 100MB 上限，不入库
+1.mov
+*.mov
+
+# 系统 / 临时文件
+.DS_Store
+*.log
+
+# 抽帧/调试临时图
+montage_*.jpg
+combat_*.jpg
+card_*.jpg
+clip_check.jpg

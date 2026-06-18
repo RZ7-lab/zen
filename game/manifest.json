@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "title": "佛舍 · 鬼市",
+    "boss": "折命娘 · 怨灵蛛生",
+    "note": "占位片段裁自概念视频 1.mov；正式版每段应由 Seedance 2.0 独立生成（见 README 生产规格）。所有片段须满足『状态无关』铁律：片段内不编码血量/伤害，数值全部由 UI 层承载。"
+  },
+
+  "clips": {
+    "intro":         { "src": "clips/intro.mp4",         "loop": false },
+    "idle":          { "src": "clips/idle.mp4",          "loop": true  },
+    "attack_light":  { "src": "clips/attack_light.mp4",  "loop": false },
+    "attack_skill":  { "src": "clips/attack_skill.mp4",  "loop": false },
+    "boss_windup":   { "src": "clips/boss_windup.mp4",   "loop": false,
+                       "parryWindow": { "prompt": 2.6, "start": 3.4, "end": 4.4 } },
+    "parry_success": { "src": "clips/parry_success.mp4", "loop": false },
+    "player_hit":    { "src": "clips/player_hit.mp4",    "loop": false },
+    "break_execute": { "src": "clips/break_execute.mp4", "loop": false },
+    "boss_phase2":   { "src": "clips/boss_phase2.mp4",   "loop": false },
+    "victory":       { "src": "clips/victory.mp4",       "loop": false }
+  },
+
+  "player": { "name": "佛舍", "hp": 1000, "qiMax": 5, "qiStart": 2 },
+
+  "boss": {
+    "name": "折命娘 · 怨灵蛛生",
+    "phases": [
+      { "hp": 1400, "postureMax": 100 },
+      { "hp": 1800, "postureMax": 120 }
+    ]
+  },
+
+  "skills": [
+    { "id": "light",    "name": "罗汉棍",        "type": "attack", "cost": 0, "qiGain": 1, "dmg": [150, 220], "posture": 14, "clip": "attack_light", "hint": "普攻 · 蓄气" },
+    { "id": "ultimate", "name": "奥义·大藏天崩", "type": "attack", "cost": 3, "qiGain": 0, "dmg": [620, 880], "posture": 48, "clip": "attack_skill", "hint": "重击 · 巨额破防" },
+    { "id": "meditate", "name": "金刚冥想",      "type": "buff",   "cost": 0, "qiGain": 2, "heal": 240,       "posture": 0,  "clip": null,           "hint": "回血回气 · 但露破绽" }
+  ],
+
+  "bossAttack": {
+    "name": "裂地八足",
+    "clip": "boss_windup",
+    "dmg": [150, 230],
+    "postureOnParry": 22
+  }
+}
